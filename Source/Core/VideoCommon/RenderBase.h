@@ -188,6 +188,8 @@ public:
   std::tuple<MathUtil::Rectangle<int>, MathUtil::Rectangle<int>>
   ConvertStereoRectangle(const MathUtil::Rectangle<int>& rc) const;
 
+  void ConvertStereoRectangles(const MathUtil::Rectangle<int>& rc, std::vector<MathUtil::Rectangle<int>>& stereo_rects) const;
+
   unsigned int GetEFBScale() const;
 
   // Use this to upscale native EFB coordinates to IDEAL internal resolution

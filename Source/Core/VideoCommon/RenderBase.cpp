@@ -21,6 +21,7 @@
 #include <mutex>
 #include <string>
 #include <tuple>
+#include <vector>
 
 #include <fmt/format.h>
 #include <imgui.h>
@@ -335,6 +336,65 @@ bool Renderer::CalculateTargetSize()
     return true;
   }
   return false;
+}
+
+void Renderer::ConvertStereoRectangles(const MathUtil::Rectangle<int>& rc, std::vector<MathUtil::Rectangle<int>>& stereo_rects) const {
+
+  if (g_ActiveConfig.stereo_mode == StereoMode::Quilt ||
+      g_ActiveConfig.stereo_mode == StereoMode::MultiviewLayers)
+  {
+    auto numViews = g_ActiveConfig.GetNumStereoLayers();
+
+    int w = (float)(rc.right - rc.left) / (float)(numViews);
+    for (u32 i = 0; i < numViews; ++i)
+    {
+      MathUtil::Rectangle<int> stereo_rect;
+      stereo_rect.left = rc.left + i * w;
+      stereo_rect.right = rc.left + i * w + w;
+      stereo_rect.top = rc.top;
+      stereo_rect.bottom = rc.bottom;
+      stereo_rects.push_back(stereo_rect);
+    }
+
+    return;
+  }
+
+  // Resize target to half its original size
+  auto draw_rc = rc;
+  if (g_ActiveConfig.stereo_mode == StereoMode::TAB)
+  {
+    // The height may be negative due to flipped rectangles
+    int height = rc.bottom - rc.top;
+    draw_rc.top += height / 4;
+    draw_rc.bottom -= height / 4;
+  }
+  else
+  {
+    int width = rc.right - rc.left;
+    draw_rc.left += width / 4;
+    draw_rc.right -= width / 4;
+  }
+
+  // Create two target rectangle offset to the sides of the backbuffer
+  auto left_rc = draw_rc;
+  auto right_rc = draw_rc;
+  if (g_ActiveConfig.stereo_mode == StereoMode::TAB)
+  {
+    left_rc.top -= m_backbuffer_height / 4;
+    left_rc.bottom -= m_backbuffer_height / 4;
+    right_rc.top += m_backbuffer_height / 4;
+    right_rc.bottom += m_backbuffer_height / 4;
+  }
+  else
+  {
+    left_rc.left -= m_backbuffer_width / 4;
+    left_rc.right -= m_backbuffer_width / 4;
+    right_rc.left += m_backbuffer_width / 4;
+    right_rc.right += m_backbuffer_width / 4;
+  }
+
+  stereo_rects.push_back(left_rc);
+  stereo_rects.push_back(right_rc);
 }
 
 std::tuple<MathUtil::Rectangle<int>, MathUtil::Rectangle<int>>
@@ -1347,6 +1407,14 @@ void Renderer::RenderXFBToScreen(const MathUtil::Rectangle<int>& target_rc,
 
     m_post_processor->BlitFromTexture(left_rc, source_rc, source_texture, 0);
     m_post_processor->BlitFromTexture(right_rc, source_rc, source_texture, 1);
+  }
+  else if (g_ActiveConfig.GetNumStereoLayers() > 1) {
+    std::vector<MathUtil::Rectangle<int>> stereo_rects;
+    ConvertStereoRectangles(target_rc, stereo_rects);
+
+    for (auto i = 0; i < stereo_rects.size(); ++i) {
+      m_post_processor->BlitFromTexture(stereo_rects[i], source_rc, source_texture, i);
+    }
   }
   else
   {

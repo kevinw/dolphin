@@ -40,7 +40,9 @@ enum class StereoMode : int
   TAB,
   Anaglyph,
   QuadBuffer,
-  Passive
+  Passive,
+  Quilt,
+  MultiviewLayers
 };
 
 enum class ShaderCompilationMode : int
@@ -148,6 +150,9 @@ struct VideoConfig final
   int iStereoDepth;
   int iStereoConvergence;
   int iStereoConvergencePercentage;
+  int iMultiviewLayersCount;
+  int iQuiltViewsWide;
+  int iQuiltViewsTall;
   bool bStereoSwapEyes;
   bool bStereoEFBMonoDepth;
   int iStereoDepthPercentage;
@@ -248,6 +253,18 @@ struct VideoConfig final
   bool UsingUberShaders() const;
   u32 GetShaderCompilerThreads() const;
   u32 GetShaderPrecompilerThreads() const;
+  u32 GetNumStereoLayers() const {
+    switch (stereo_mode) {
+      case StereoMode::Off:
+        return 1;
+      case StereoMode::Quilt:
+        return iQuiltViewsWide * iQuiltViewsTall;
+      case StereoMode::MultiviewLayers:
+        return iMultiviewLayersCount;
+      default:
+        return 2;
+    }
+  }
 };
 
 extern VideoConfig g_Config;

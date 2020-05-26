@@ -183,7 +183,8 @@ union ShaderHostConfig
     u32 backend_shader_framebuffer_fetch : 1;
     u32 backend_logic_op : 1;
     u32 backend_palette_conversion : 1;
-    u32 pad : 9;
+    u32 stereo_num_views : 6;
+    u32 pad : 3;
   };
 
   static ShaderHostConfig GetCurrent();

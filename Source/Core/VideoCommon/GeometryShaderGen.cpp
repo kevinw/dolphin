@@ -7,6 +7,7 @@
 #include <cmath>
 
 #include "Common/CommonTypes.h"
+#include "Common/Logging/Log.h"
 #include "VideoCommon/DriverDetails.h"
 #include "VideoCommon/LightingShaderGen.h"
 #include "VideoCommon/VideoCommon.h"
@@ -51,6 +52,8 @@ ShaderCode GenerateGeometryShaderCode(APIType ApiType, const ShaderHostConfig& h
   const bool msaa = host_config.msaa;
   const bool ssaa = host_config.ssaa;
   const bool stereo = host_config.stereo;
+  const uint16_t stereo_num_views = host_config.stereo_num_views;
+  INFO_LOG(HOST_GPU, "in geo shader gen: stereo_num_views %d", stereo_num_views);
   const PrimitiveType primitive_type = static_cast<PrimitiveType>(uid_data->primitive_type);
   const unsigned primitive_type_index = static_cast<unsigned>(uid_data->primitive_type);
   const unsigned vertex_in = std::min(static_cast<unsigned>(primitive_type_index) + 1, 3u);
@@ -65,7 +68,7 @@ ShaderCode GenerateGeometryShaderCode(APIType ApiType, const ShaderHostConfig& h
     if (host_config.backend_gs_instancing)
     {
       out.Write("layout(%s, invocations = %d) in;\n", primitives_ogl[primitive_type_index],
-                stereo ? 2 : 1);
+                stereo ? stereo_num_views : 1);
       out.Write("layout(%s_strip, max_vertices = %d) out;\n", wireframe ? "line" : "triangle",
                 vertex_out);
     }
@@ -73,7 +76,7 @@ ShaderCode GenerateGeometryShaderCode(APIType ApiType, const ShaderHostConfig& h
     {
       out.Write("layout(%s) in;\n", primitives_ogl[primitive_type_index]);
       out.Write("layout(%s_strip, max_vertices = %d) out;\n", wireframe ? "line" : "triangle",
-                stereo ? vertex_out * 2 : vertex_out);
+                stereo ? vertex_out * stereo_num_views : vertex_out);
     }
   }
 
@@ -127,14 +130,14 @@ ShaderCode GenerateGeometryShaderCode(APIType ApiType, const ShaderHostConfig& h
 
     if (host_config.backend_gs_instancing)
     {
-      out.Write("[maxvertexcount(%d)]\n[instance(%d)]\n", vertex_out, stereo ? 2 : 1);
+      out.Write("[maxvertexcount(%d)]\n[instance(%d)]\n", vertex_out, stereo ? stereo_num_views : 1);
       out.Write("void main(%s VS_OUTPUT o[%d], inout %sStream<VertexData> output, in uint "
                 "InstanceID : SV_GSInstanceID)\n{\n",
                 primitives_d3d[primitive_type_index], vertex_in, wireframe ? "Line" : "Triangle");
     }
     else
     {
-      out.Write("[maxvertexcount(%d)]\n", stereo ? vertex_out * 2 : vertex_out);
+      out.Write("[maxvertexcount(%d)]\n", stereo ? vertex_out * stereo_num_views : vertex_out);
       out.Write("void main(%s VS_OUTPUT o[%d], inout %sStream<VertexData> output)\n{\n",
                 primitives_d3d[primitive_type_index], vertex_in, wireframe ? "Line" : "Triangle");
     }
@@ -198,7 +201,7 @@ ShaderCode GenerateGeometryShaderCode(APIType ApiType, const ShaderHostConfig& h
     if (host_config.backend_gs_instancing)
       out.Write("\tint eye = InstanceID;\n");
     else
-      out.Write("\tfor (int eye = 0; eye < 2; ++eye) {\n");
+      out.Write("\tfor (int eye = 0; eye < %d; ++eye) {\n", stereo_num_views);
   }
 
   if (wireframe)

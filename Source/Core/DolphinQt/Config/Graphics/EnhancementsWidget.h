@@ -11,6 +11,7 @@ class QCheckBox;
 class QComboBox;
 class QPushButton;
 class QSlider;
+class QSpinBox;
 
 class EnhancementsWidget final : public GraphicsWidget
 {
@@ -48,6 +49,9 @@ private:
   QSlider* m_3d_depth;
   QSlider* m_3d_convergence;
   QCheckBox* m_3d_swap_eyes;
+  QSpinBox* m_quilt_views_wide;
+  QSpinBox* m_quilt_views_tall;
+  QSpinBox* m_multiview_layers_count;
 
   int m_msaa_modes;
   bool m_block_save;

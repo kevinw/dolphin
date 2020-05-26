@@ -142,6 +142,9 @@ void VideoConfig::Refresh()
   iStereoConvergence = Config::Get(Config::GFX_STEREO_CONVERGENCE);
   bStereoEFBMonoDepth = Config::Get(Config::GFX_STEREO_EFB_MONO_DEPTH);
   iStereoDepthPercentage = Config::Get(Config::GFX_STEREO_DEPTH_PERCENTAGE);
+  iQuiltViewsWide = Config::Get(Config::GFX_STEREO_QUILT_VIEWS_WIDE);
+  iQuiltViewsTall = Config::Get(Config::GFX_STEREO_QUILT_VIEWS_TALL);
+  iMultiviewLayersCount = Config::Get(Config::GFX_STEREO_MULTIVIEW_LAYERS_COUNT);
 
   bEFBAccessEnable = Config::Get(Config::GFX_HACK_EFB_ACCESS_ENABLE);
   bEFBAccessDeferInvalidation = Config::Get(Config::GFX_HACK_EFB_DEFER_INVALIDATION);

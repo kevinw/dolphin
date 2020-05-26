@@ -130,6 +130,12 @@ const Info<bool> GFX_STEREO_EFB_MONO_DEPTH{{System::GFX, "Stereoscopy", "StereoE
                                            false};
 const Info<int> GFX_STEREO_DEPTH_PERCENTAGE{{System::GFX, "Stereoscopy", "StereoDepthPercentage"},
                                             100};
+const Info<int> GFX_STEREO_QUILT_VIEWS_WIDE{{System::GFX, "Stereoscopy", "StereoQuiltViewsWide"},
+                                            4};
+const Info<int> GFX_STEREO_QUILT_VIEWS_TALL{{System::GFX, "Stereoscopy", "StereoQuiltViewsTall"},
+                                            4};
+const Info<int> GFX_STEREO_MULTIVIEW_LAYERS_COUNT{{System::GFX, "Stereoscopy", "StereoMultiviewLayersCount"},
+                                            16};
 
 // Graphics.Hacks
 

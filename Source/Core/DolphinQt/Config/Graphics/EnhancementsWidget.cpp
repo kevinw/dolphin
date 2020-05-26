@@ -19,6 +19,7 @@
 #include "DolphinQt/Config/Graphics/GraphicsChoice.h"
 #include "DolphinQt/Config/Graphics/GraphicsSlider.h"
 #include "DolphinQt/Config/Graphics/GraphicsWindow.h"
+#include "DolphinQt/Config/Graphics/GraphicsInteger.h"
 #include "DolphinQt/Config/Graphics/PostProcessingConfigWindow.h"
 #include "DolphinQt/QtUtils/ModalMessageBox.h"
 #include "DolphinQt/Settings.h"
@@ -120,12 +121,16 @@ void EnhancementsWidget::CreateWidgets()
   stereoscopy_box->setLayout(stereoscopy_layout);
 
   m_3d_mode = new GraphicsChoice({tr("Off"), tr("Side-by-Side"), tr("Top-and-Bottom"),
-                                  tr("Anaglyph"), tr("HDMI 3D"), tr("Passive")},
+                                  tr("Anaglyph"), tr("HDMI 3D"), tr("Passive"),
+                                  tr("Quilt"), tr("Multiview Layers")},
                                  Config::GFX_STEREO_MODE);
   m_3d_depth = new GraphicsSlider(0, Config::GFX_STEREO_DEPTH_MAXIMUM, Config::GFX_STEREO_DEPTH);
   m_3d_convergence = new GraphicsSlider(0, Config::GFX_STEREO_CONVERGENCE_MAXIMUM,
                                         Config::GFX_STEREO_CONVERGENCE, 100);
   m_3d_swap_eyes = new GraphicsBool(tr("Swap Eyes"), Config::GFX_STEREO_SWAP_EYES);
+  m_quilt_views_wide = new GraphicsInteger(2, 5, Config::GFX_STEREO_QUILT_VIEWS_WIDE);
+  m_quilt_views_tall = new GraphicsInteger(2, 9, Config::GFX_STEREO_QUILT_VIEWS_TALL);
+  m_multiview_layers_count = new GraphicsInteger(1, 45, Config::GFX_STEREO_MULTIVIEW_LAYERS_COUNT);
 
   stereoscopy_layout->addWidget(new QLabel(tr("Stereoscopic 3D Mode:")), 0, 0);
   stereoscopy_layout->addWidget(m_3d_mode, 0, 1);
@@ -134,6 +139,12 @@ void EnhancementsWidget::CreateWidgets()
   stereoscopy_layout->addWidget(new QLabel(tr("Convergence:")), 2, 0);
   stereoscopy_layout->addWidget(m_3d_convergence, 2, 1);
   stereoscopy_layout->addWidget(m_3d_swap_eyes, 3, 0);
+  stereoscopy_layout->addWidget(new QLabel(tr("Quilt Num Views Wide:")), 4, 0);
+  stereoscopy_layout->addWidget(m_quilt_views_wide, 4, 1);
+  stereoscopy_layout->addWidget(new QLabel(tr("Quilt Num Views Tall:")), 5, 0);
+  stereoscopy_layout->addWidget(m_quilt_views_tall, 5, 1);
+  stereoscopy_layout->addWidget(new QLabel(tr("Multiview Layers Count:")), 6, 0);
+  stereoscopy_layout->addWidget(m_multiview_layers_count, 6, 1);
 
   main_layout->addWidget(enhancements_box);
   main_layout->addWidget(stereoscopy_box);
