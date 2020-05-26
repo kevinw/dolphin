@@ -1214,9 +1214,9 @@ bool ShaderCache::CompileSharedPipelines()
   if (UseGeometryShaderForEFBCopies())
   {
     m_texcoord_geometry_shader = g_renderer->CreateShaderFromSource(
-        ShaderStage::Geometry, FramebufferShaderGen::GeneratePassthroughGeometryShader(1, 0));
+        ShaderStage::Geometry, FramebufferShaderGen::GeneratePassthroughGeometryShader(1, 0, g_ActiveConfig.GetNumStereoLayers()));
     m_color_geometry_shader = g_renderer->CreateShaderFromSource(
-        ShaderStage::Geometry, FramebufferShaderGen::GeneratePassthroughGeometryShader(0, 1));
+        ShaderStage::Geometry, FramebufferShaderGen::GeneratePassthroughGeometryShader(0, 1, g_ActiveConfig.GetNumStereoLayers()));
     if (!m_texcoord_geometry_shader || !m_color_geometry_shader)
       return false;
   }

@@ -81,7 +81,7 @@ struct hash<TextureConfig>
   result_type operator()(const argument_type& c) const noexcept
   {
     const u64 id = static_cast<u64>(c.flags) << 58 | static_cast<u64>(c.format) << 50 |
-                   static_cast<u64>(c.layers) << 48 | static_cast<u64>(c.levels) << 32 |
+                   static_cast<u64>(c.layers) << 48 | static_cast<u64>(c.levels) << 32 | // TODO: layers can occupy more than 2 bits now
                    static_cast<u64>(c.height) << 16 | static_cast<u64>(c.width);
     return std::hash<u64>{}(id);
   }

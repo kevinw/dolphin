@@ -238,7 +238,7 @@ std::string GenerateScreenQuadVertexShader()
   return ss.str();
 }
 
-std::string GeneratePassthroughGeometryShader(u32 num_tex, u32 num_colors)
+std::string GeneratePassthroughGeometryShader(u32 num_tex, u32 num_colors, u32 num_layers)
 {
   std::ostringstream ss;
   if (GetAPIType() == APIType::D3D)
@@ -262,10 +262,10 @@ std::string GeneratePassthroughGeometryShader(u32 num_tex, u32 num_colors)
           "  uint slice : SV_RenderTargetArrayIndex;\n"
           "};\n\n";
 
-    ss << "[maxvertexcount(6)]\n"
+    ss << "[maxvertexcount(" << (3 * num_layers) << ")]\n"
           "void main(triangle VS_OUTPUT vso[3], inout TriangleStream<GS_OUTPUT> output)\n"
           "{\n"
-          "  for (uint slice = 0; slice < 2u; slice++)\n"
+          "  for (uint slice = 0; slice < " << num_layers << "u; slice++)\n"
           "  {\n"
           "    for (int i = 0; i < 3; i++)\n"
           "    {\n"
@@ -285,7 +285,7 @@ std::string GeneratePassthroughGeometryShader(u32 num_tex, u32 num_colors)
   else if (GetAPIType() == APIType::OpenGL || GetAPIType() == APIType::Vulkan)
   {
     ss << "layout(triangles) in;\n"
-          "layout(triangle_strip, max_vertices = 6) out;\n";
+          "layout(triangle_strip, max_vertices = " << (3 * num_layers) << ") out;\n";
     if (num_tex > 0 || num_colors > 0)
     {
       ss << "VARYING_LOCATION(0) in VertexData {\n";
@@ -305,7 +305,7 @@ std::string GeneratePassthroughGeometryShader(u32 num_tex, u32 num_colors)
     ss << "\n"
           "void main()\n"
           "{\n"
-          "  for (int j = 0; j < 2; j++)\n"
+          "  for (int j = 0; j < " << num_layers << "; j++)\n"
           "  {\n"
           "    gl_Layer = j;\n";
 

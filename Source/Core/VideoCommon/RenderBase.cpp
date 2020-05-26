@@ -340,9 +340,30 @@ bool Renderer::CalculateTargetSize()
 
 void Renderer::ConvertStereoRectangles(const MathUtil::Rectangle<int>& rc, std::vector<MathUtil::Rectangle<int>>& stereo_rects) const {
 
-  if (g_ActiveConfig.stereo_mode == StereoMode::Quilt ||
-      g_ActiveConfig.stereo_mode == StereoMode::MultiviewLayers)
+  if (g_ActiveConfig.stereo_mode == StereoMode::Quilt)
   {
+    int w = (float)abs(rc.right - rc.left) / (float)g_ActiveConfig.iQuiltViewsWide;
+    int h = (float)abs(rc.top - rc.bottom) / (float)g_ActiveConfig.iQuiltViewsTall;
+
+    // TODO: do we need to maintain the sign of the differences here?
+
+    for (int y = 0; y < g_ActiveConfig.iQuiltViewsTall; ++y)
+    {
+      for (int x = 0; x < g_ActiveConfig.iQuiltViewsWide; ++x)
+      {
+        MathUtil::Rectangle<int> stereo_rect;
+        stereo_rect.left = rc.left + x * w;
+        stereo_rect.right = stereo_rect.left + w;
+        stereo_rect.top = rc.top + y * h;
+        stereo_rect.bottom = stereo_rect.top + h;
+        stereo_rects.push_back(stereo_rect);
+      }
+    } 
+  }
+  else if (g_ActiveConfig.stereo_mode == StereoMode::MultiviewLayers)
+  {
+    // TODO: this is just laying them out in a series horizontally, which isn't
+    // actually useful...
     auto numViews = g_ActiveConfig.GetNumStereoLayers();
 
     int w = (float)(rc.right - rc.left) / (float)(numViews);
@@ -350,51 +371,51 @@ void Renderer::ConvertStereoRectangles(const MathUtil::Rectangle<int>& rc, std::
     {
       MathUtil::Rectangle<int> stereo_rect;
       stereo_rect.left = rc.left + i * w;
-      stereo_rect.right = rc.left + i * w + w;
       stereo_rect.top = rc.top;
+      stereo_rect.right = rc.left + i * w + w;
       stereo_rect.bottom = rc.bottom;
       stereo_rects.push_back(stereo_rect);
     }
-
-    return;
-  }
-
-  // Resize target to half its original size
-  auto draw_rc = rc;
-  if (g_ActiveConfig.stereo_mode == StereoMode::TAB)
-  {
-    // The height may be negative due to flipped rectangles
-    int height = rc.bottom - rc.top;
-    draw_rc.top += height / 4;
-    draw_rc.bottom -= height / 4;
   }
   else
   {
-    int width = rc.right - rc.left;
-    draw_rc.left += width / 4;
-    draw_rc.right -= width / 4;
-  }
+    // Resize target to half its original size
+    auto draw_rc = rc;
+    if (g_ActiveConfig.stereo_mode == StereoMode::TAB)
+    {
+      // The height may be negative due to flipped rectangles
+      int height = rc.bottom - rc.top;
+      draw_rc.top += height / 4;
+      draw_rc.bottom -= height / 4;
+    }
+    else
+    {
+      int width = rc.right - rc.left;
+      draw_rc.left += width / 4;
+      draw_rc.right -= width / 4;
+    }
 
-  // Create two target rectangle offset to the sides of the backbuffer
-  auto left_rc = draw_rc;
-  auto right_rc = draw_rc;
-  if (g_ActiveConfig.stereo_mode == StereoMode::TAB)
-  {
-    left_rc.top -= m_backbuffer_height / 4;
-    left_rc.bottom -= m_backbuffer_height / 4;
-    right_rc.top += m_backbuffer_height / 4;
-    right_rc.bottom += m_backbuffer_height / 4;
-  }
-  else
-  {
-    left_rc.left -= m_backbuffer_width / 4;
-    left_rc.right -= m_backbuffer_width / 4;
-    right_rc.left += m_backbuffer_width / 4;
-    right_rc.right += m_backbuffer_width / 4;
-  }
+    // Create two target rectangle offset to the sides of the backbuffer
+    auto left_rc = draw_rc;
+    auto right_rc = draw_rc;
+    if (g_ActiveConfig.stereo_mode == StereoMode::TAB)
+    {
+      left_rc.top -= m_backbuffer_height / 4;
+      left_rc.bottom -= m_backbuffer_height / 4;
+      right_rc.top += m_backbuffer_height / 4;
+      right_rc.bottom += m_backbuffer_height / 4;
+    }
+    else
+    {
+      left_rc.left -= m_backbuffer_width / 4;
+      left_rc.right -= m_backbuffer_width / 4;
+      right_rc.left += m_backbuffer_width / 4;
+      right_rc.right += m_backbuffer_width / 4;
+    }
 
-  stereo_rects.push_back(left_rc);
-  stereo_rects.push_back(right_rc);
+    stereo_rects.push_back(left_rc);
+    stereo_rects.push_back(right_rc);
+  }
 }
 
 std::tuple<MathUtil::Rectangle<int>, MathUtil::Rectangle<int>>
@@ -1030,7 +1051,7 @@ bool Renderer::RecompileImGuiPipeline()
   if (UseGeometryShaderForUI())
   {
     geometry_shader = CreateShaderFromSource(
-        ShaderStage::Geometry, FramebufferShaderGen::GeneratePassthroughGeometryShader(1, 1));
+        ShaderStage::Geometry, FramebufferShaderGen::GeneratePassthroughGeometryShader(1, 1, g_ActiveConfig.GetNumStereoLayers()));
     if (!geometry_shader)
     {
       PanicAlert("Failed to compile imgui geometry shader");
