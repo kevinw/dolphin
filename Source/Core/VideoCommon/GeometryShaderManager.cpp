@@ -51,10 +51,19 @@ void GeometryShaderManager::SetConstants()
                      (g_ActiveConfig.iStereoDepthPercentage / 100.0f);
       constants.stereoparams[0] = g_ActiveConfig.bStereoSwapEyes ? offset : -offset;
       constants.stereoparams[1] = g_ActiveConfig.bStereoSwapEyes ? -offset : offset;
+
+      // TODO: bStereoSwapEyes
+      u32 numLayers = g_ActiveConfig.GetNumStereoLayers();
+      float halfTotal = offset * numLayers * 0.5f;
+      for (u32 i = 0; i < g_ActiveConfig.GetNumStereoLayers(); ++i) {
+        constants.stereooffsets[i] = offset * i - halfTotal;
+      }
     }
     else
     {
       constants.stereoparams[0] = constants.stereoparams[1] = 0;
+      for (u32 i = 0; i < g_ActiveConfig.GetNumStereoLayers(); ++i)
+        constants.stereooffsets[i] = 0;
     }
 
     constants.stereoparams[2] = (float)(g_ActiveConfig.iStereoConvergence *

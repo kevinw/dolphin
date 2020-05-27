@@ -91,6 +91,7 @@ ShaderCode GenerateGeometryShaderCode(APIType ApiType, const ShaderHostConfig& h
   out.Write("\tfloat4 " I_STEREOPARAMS ";\n"
             "\tfloat4 " I_LINEPTPARAMS ";\n"
             "\tint4 " I_TEXOFFSET ";\n"
+            "\tfloat " I_STEREOOFFSETS "[" I_MAXEYES "];\n"
             "};\n");
 
   out.Write("struct VS_OUTPUT {\n");
@@ -242,7 +243,8 @@ ShaderCode GenerateGeometryShaderCode(APIType ApiType, const ShaderHostConfig& h
     // the depth value. This results in objects at a distance smaller than the convergence
     // distance to seemingly appear in front of the screen.
     // This formula is based on page 13 of the "Nvidia 3D Vision Automatic, Best Practices Guide"
-    out.Write("\tfloat hoffset = (eye == 0) ? " I_STEREOPARAMS ".x : " I_STEREOPARAMS ".y;\n");
+    out.Write("\t//float hoffset = (eye == 0) ? " I_STEREOPARAMS ".x : " I_STEREOPARAMS ".y;\n");
+    out.Write("\tfloat hoffset = " I_STEREOOFFSETS "[eye];\n");
     out.Write("\tf.pos.x += hoffset * (f.pos.w - " I_STEREOPARAMS ".z);\n");
   }
 

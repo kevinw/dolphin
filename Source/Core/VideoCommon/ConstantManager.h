@@ -89,4 +89,7 @@ struct GeometryShaderConstants
   float4 stereoparams;
   float4 lineptparams;
   int4 texoffset;
+
+  static constexpr int MAX_EYES = 64;
+  std::array<float, MAX_EYES> stereooffsets;
 };
